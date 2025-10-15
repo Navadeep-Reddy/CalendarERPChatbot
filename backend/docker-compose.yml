@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+    calendar-chatbot:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: calendar-erp-chatbot
+        ports:
+            - "8000:8000"
+        environment:
+            - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+            - APP_NAME=Calendar ERP Chatbot
+            - DEBUG=True
+            - LLM_MODEL=gemini-2.5-flash
+            - LLM_TEMPERATURE=0.7
+            - MAX_TOKENS=500
+            - VECTOR_DB_PATH=/app/data/vectorstore
+            - API_HOST=0.0.0.0
+            - API_PORT=8000
+        volumes:
+            # Mount vector store to persist data
+            - ./data/vectorstore:/app/data/vectorstore
+            # Mount calendar data for easy updates
+            - ./data/calendar_events.json:/app/data/calendar_events.json
+            # Uncomment below for development to enable hot-reload
+            # - ./app:/app/app
+        env_file:
+            - .env
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
+# Optional: Add a reverse proxy (nginx) for production
+# volumes:
+#   vectorstore_data:

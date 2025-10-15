@@ -1,0 +1,138 @@
+# --- Python bytecode ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# --- Distribution / packaging ---
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Installer logs
+pip-log.txt
+
+# --- Testing / coverage ---
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# --- Python environment ---
+.python-version
+env/
+venv/
+ENV/
+.venv/
+venv*/
+
+# dotenv files (keep example files)
+.env
+.env.*
+!.env.example
+
+# --- IDEs / editors ---
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# --- OS artifacts ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Logs & runtime ---
+logs/
+*.log
+*.err
+
+# --- Local config ---
+local_settings.py
+settings.local.py
+
+# --- Jupyter ---
+.ipynb_checkpoints
+
+# --- Type checkers / caches ---
+.mypy_cache/
+.dmypy.json
+.pyre/
+
+# --- PyInstaller ---
+*.manifest
+*.spec
+
+# --- Wheels ---
+*.whl
+
+# --- Secrets / credentials ---
+credentials.json
+service_account.json
+google-credentials.json
+
+# --- Databases ---
+*.sqlite3
+*.db
+*.sqlite
+
+# --- LangChain / vector DB / embeddings artifacts ---
+# Common directories and index files (Chroma, FAISS, etc.)
+chroma.db/
+.chromadb/
+chromadb/
+chroma-*
+vector_store/
+vectordb/
+embeddings/
+faiss_index/
+*.faiss
+*.index
+*.idx
+*.ann
+*.pkl
+
+# --- Hugging Face / transformers / model caches & large files ---
+.cache/
+.cache/huggingface/
+.cache/huggingface/hub
+transformers_cache/
+hf_home/
+model/
+models/
+*.bin
+*.pt
+*.safetensors
+*.ckpt
+*.onnx
+*.pth
+*.pdf
+
+# --- Llama / llama.cpp / GGML artifacts ---
+llama.cpp/
+ggml/
+
+# --- Node / frontend artifacts (if present) ---
+node_modules/
+dist/
+
+# --- Docker ---
+docker-compose.override.yml
+.env.docker
+
+# --- Misc ---
+*.tmp
+tmp/
+temp/
+
+# --- Generated docs ---
+docs/_build/
+
