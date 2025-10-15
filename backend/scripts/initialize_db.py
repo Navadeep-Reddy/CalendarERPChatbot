@@ -14,10 +14,29 @@ def main():
     """Initialize vector store with calendar data"""
     print("🚀 Initializing vector store with calendar data...")
     
-    data_path = os.path.join(
+    # Path to COE.pdf (or fallback to JSON)
+    pdf_path = os.path.join(
+        os.path.dirname(__file__),
+        '../data/COE.pdf'
+    )
+    
+    json_path = os.path.join(
         os.path.dirname(__file__),
         '../data/calendar_events.json'
     )
+    
+    # Use PDF if it exists, otherwise fallback to JSON
+    if os.path.exists(pdf_path):
+        data_path = pdf_path
+        print(f"📄 Using PDF file: {pdf_path}")
+    elif os.path.exists(json_path):
+        data_path = json_path
+        print(f"📋 Using JSON file: {json_path}")
+    else:
+        print(f"❌ Error: No data file found!")
+        print(f"   Expected PDF at: {pdf_path}")
+        print(f"   Or JSON at: {json_path}")
+        sys.exit(1)
     
     try:
         chatbot = RAGChatbot()
@@ -28,6 +47,8 @@ def main():
         
     except Exception as e:
         print(f"❌ Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 

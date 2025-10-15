@@ -114,6 +114,7 @@ models/
 *.ckpt
 *.onnx
 *.pth
+*.pdf
 
 # --- Llama / llama.cpp / GGML artifacts ---
 llama.cpp/

@@ -4,6 +4,7 @@ FastAPI application main file
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+import os
 from app.models import ChatRequest, ChatResponse, HealthResponse, SourceDocument
 from app.config import settings
 from app.rag_chain import RAGChatbot
@@ -30,15 +31,28 @@ chatbot = None
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize the chatbot on startup"""
+    """Initialize the chatbot on startup using cached vector store"""
     global chatbot
     try:
+        print("🚀 Initializing RAG Chatbot...")
         chatbot = RAGChatbot()
-        chatbot.initialize_chain()
-        print("✅ RAG Chatbot initialized successfully")
+        
+        # Check if vector store cache exists
+        if os.path.exists(settings.vector_db_path):
+            print(f"📂 Loading cached vector store from: {settings.vector_db_path}")
+            chatbot.doc_processor.load_vector_store()
+            chatbot.retriever = chatbot.doc_processor.get_retriever(k=4)
+            print("✅ RAG Chatbot initialized successfully (from cache)")
+        else:
+            print(f"⚠️  Vector store not found at: {settings.vector_db_path}")
+            print("⚠️  Please run: python scripts/initialize_db.py")
+            print("⚠️  Chatbot will not be available until initialized")
+            chatbot = None
+            
     except Exception as e:
         print(f"⚠️  Warning: Could not initialize chatbot - {str(e)}")
         print("   Vector store may need to be initialized. Use /initialize endpoint.")
+        chatbot = None
 
 
 @app.get("/", response_model=HealthResponse)

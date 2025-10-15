@@ -97,6 +97,11 @@ Helpful Answer:"""
     
     def initialize_vector_store(self, data_path: str):
         """Initialize vector store with calendar data"""
-        documents = self.doc_processor.load_calendar_data(data_path)
+        # Check if it's a PDF or JSON file
+        if data_path.endswith('.pdf'):
+            documents = self.doc_processor.load_pdf_documents(data_path)
+        else:
+            documents = self.doc_processor.load_calendar_data(data_path)
+        
         self.doc_processor.create_vector_store(documents)
-        print(f"Vector store initialized with {len(documents)} events")
+        print(f"Vector store initialized with {len(documents)} documents")

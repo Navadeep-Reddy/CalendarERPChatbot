@@ -7,6 +7,7 @@ from typing import List
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.docstore.document import Document
 from app.config import settings
 
@@ -25,6 +26,29 @@ class DocumentProcessor:
             model_name="sentence-transformers/all-MiniLM-L6-v2"
         )
         self.vector_store = None
+    
+    def load_pdf_documents(self, pdf_path: str) -> List[Document]:
+        """
+        Load and process PDF document
+        
+        Args:
+            pdf_path: Path to the PDF file
+            
+        Returns:
+            List of processed documents
+        """
+        if not os.path.exists(pdf_path):
+            raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+        
+        print(f"📄 Loading PDF from: {pdf_path}")
+        
+        # Load PDF using PyPDFLoader
+        loader = PyPDFLoader(pdf_path)
+        documents = loader.load()
+        
+        print(f"✅ Loaded {len(documents)} pages from PDF")
+        
+        return documents
     
     def load_calendar_data(self, data_path: str) -> List[Document]:
         """Load calendar events from JSON file and convert to documents"""
