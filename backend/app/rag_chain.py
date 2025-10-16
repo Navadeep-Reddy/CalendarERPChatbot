@@ -73,7 +73,8 @@ Context:
 Question: {question}
 
 Helpful Answer:"""
-            genai.configure(api_key=settings.google_api_key)
+            genai.configure(api_key="")
+            gemini = genai.GenerativeModel("gemini-2.5-flash")
 
             
             # # Generate response using Google GenAI
@@ -82,12 +83,7 @@ Helpful Answer:"""
             #     contents=prompt
             # )
 
-            response = genai.generate_text(
-    model="models/gemini-2.5-flash-preview-05-20", 
-    prompt=prompt,
-    temperature=0.2,
-    max_output_tokens=512
-)
+            response = gemini.generate_content(prompt)
 
 
             # Format source documents
