@@ -4,12 +4,21 @@ Document processing and vector store management
 import json
 import os
 from typing import List
+from pathlib import Path
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.docstore.document import Document
 from app.config import settings
+
+# Optional OCR dependencies
+try:
+    from pdf2image import convert_from_path
+    import pytesseract
+    OCR_AVAILABLE = True
+except ImportError:
+    OCR_AVAILABLE = False
 
 
 class DocumentProcessor:
@@ -27,12 +36,13 @@ class DocumentProcessor:
         )
         self.vector_store = None
     
-    def load_pdf_documents(self, pdf_path: str) -> List[Document]:
+    def load_pdf_documents(self, pdf_path: str, use_ocr: bool = False) -> List[Document]:
         """
         Load and process PDF document
         
         Args:
             pdf_path: Path to the PDF file
+            use_ocr: If True, use OCR to extract text from images in PDF
             
         Returns:
             List of processed documents
@@ -42,13 +52,79 @@ class DocumentProcessor:
         
         print(f"📄 Loading PDF from: {pdf_path}")
         
-        # Load PDF using PyPDFLoader
-        loader = PyPDFLoader(pdf_path)
-        documents = loader.load()
+        if use_ocr:
+            return self._load_pdf_with_ocr(pdf_path)
+        else:
+            # Load PDF using PyPDFLoader
+            loader = PyPDFLoader(pdf_path)
+            documents = loader.load()
+            
+            print(f"✅ Loaded {len(documents)} pages from PDF")
+            
+            return documents
+    
+    def _load_pdf_with_ocr(self, pdf_path: str) -> List[Document]:
+        """
+        Load PDF using OCR for image-based PDFs
         
-        print(f"✅ Loaded {len(documents)} pages from PDF")
+        Args:
+            pdf_path: Path to the PDF file
+            
+        Returns:
+            List of Document objects with OCR-extracted text
+        """
+        if not OCR_AVAILABLE:
+            raise ImportError(
+                "OCR dependencies not installed. "
+                "Install with: pip install pdf2image pytesseract pillow\n"
+                "Also install system dependency: sudo apt-get install tesseract-ocr poppler-utils"
+            )
         
-        return documents
+        print(f"🔍 Using OCR to extract text from: {pdf_path}")
+        
+        try:
+            # Convert PDF pages to images
+            print("  📸 Converting PDF pages to images...")
+            images = convert_from_path(pdf_path)
+            print(f"  ✅ Converted {len(images)} pages to images")
+            
+            documents = []
+            
+            # Process each page with OCR
+            print("  🔤 Extracting text with OCR...")
+            for page_num, image in enumerate(images):
+                # Extract text using Tesseract
+                text = pytesseract.image_to_string(image, lang='eng')
+                
+                # Clean up extracted text
+                text = text.strip()
+                
+                if text:  # Only add non-empty pages
+                    # Create metadata
+                    metadata = {
+                        'source': pdf_path,
+                        'page': page_num,
+                        'extraction_method': 'ocr'
+                    }
+                    
+                    # Create document
+                    doc = Document(page_content=text, metadata=metadata)
+                    documents.append(doc)
+                    
+                    print(f"     Page {page_num + 1}: Extracted {len(text)} characters")
+                else:
+                    print(f"     Page {page_num + 1}: No text found")
+            
+            print(f"✅ OCR completed: {len(documents)} pages with text")
+            
+            return documents
+            
+        except Exception as e:
+            print(f"❌ OCR Error: {str(e)}")
+            print("\n💡 Make sure you have installed:")
+            print("   - pip install pdf2image pytesseract pillow")
+            print("   - sudo apt-get install tesseract-ocr poppler-utils")
+            raise
     
     def load_calendar_data(self, data_path: str) -> List[Document]:
         """Load calendar events from JSON file and convert to documents"""

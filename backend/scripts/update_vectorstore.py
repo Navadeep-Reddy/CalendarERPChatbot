@@ -95,14 +95,17 @@ def list_vectorstore_contents():
         print(f"❌ Error: {str(e)}")
 
 
-def add_documents_to_vectorstore(pdf_paths: list):
+def add_documents_to_vectorstore(pdf_paths: list, use_ocr: bool = False):
     """
     Add new PDFs to existing vector store
     
     Args:
         pdf_paths: List of PDF file paths to add
+        use_ocr: If True, use OCR to extract text from image-based PDFs
     """
     print("\n🔄 Adding Documents to Vector Store")
+    if use_ocr:
+        print("🔍 OCR Mode: Enabled (will extract text from images)")
     print("=" * 80)
     
     doc_processor = DocumentProcessor()
@@ -129,7 +132,7 @@ def add_documents_to_vectorstore(pdf_paths: list):
         
         print(f"\n  Processing: {Path(pdf_path).name}")
         try:
-            documents = doc_processor.load_pdf_documents(pdf_path)
+            documents = doc_processor.load_pdf_documents(pdf_path, use_ocr=use_ocr)
             all_documents.extend(documents)
             print(f"  ✅ Loaded {len(documents)} chunks")
         except Exception as e:
@@ -170,14 +173,17 @@ def add_documents_to_vectorstore(pdf_paths: list):
         return False
 
 
-def replace_vectorstore(pdf_paths: list):
+def replace_vectorstore(pdf_paths: list, use_ocr: bool = False):
     """
     Replace entire vector store with new PDFs
     
     Args:
         pdf_paths: List of PDF file paths
+        use_ocr: If True, use OCR to extract text from image-based PDFs
     """
     print("\n🗑️  Replacing Vector Store")
+    if use_ocr:
+        print("🔍 OCR Mode: Enabled (will extract text from images)")
     print("=" * 80)
     
     # Backup old vector store
@@ -200,7 +206,7 @@ def replace_vectorstore(pdf_paths: list):
             return False
     
     # Create new vector store
-    return add_documents_to_vectorstore(pdf_paths)
+    return add_documents_to_vectorstore(pdf_paths, use_ocr=use_ocr)
 
 
 def main():
@@ -215,11 +221,14 @@ Examples:
   # Add new PDF to existing store
   python update_vectorstore.py data/NewCalendar.pdf
   
+  # Add image-based PDF using OCR
+  python update_vectorstore.py --ocr data/sat.pdf
+  
   # Add multiple PDFs
   python update_vectorstore.py data/Fall2024.pdf data/Spring2025.pdf
   
-  # Replace entire store
-  python update_vectorstore.py --replace data/COE.pdf
+  # Replace entire store with OCR
+  python update_vectorstore.py --replace --ocr data/COE.pdf
   
   # List current contents
   python update_vectorstore.py --list
@@ -240,6 +249,11 @@ Examples:
         '--list',
         action='store_true',
         help='List current documents in vector store'
+    )
+    parser.add_argument(
+        '--ocr',
+        action='store_true',
+        help='Use OCR to extract text from image-based PDFs (requires tesseract-ocr and poppler-utils)'
     )
     
     args = parser.parse_args()
@@ -269,9 +283,9 @@ Examples:
     print("=" * 80)
     
     if args.replace:
-        success = replace_vectorstore(args.pdf_files)
+        success = replace_vectorstore(args.pdf_files, use_ocr=args.ocr)
     else:
-        success = add_documents_to_vectorstore(args.pdf_files)
+        success = add_documents_to_vectorstore(args.pdf_files, use_ocr=args.ocr)
     
     if success:
         print("\n" + "=" * 80)
